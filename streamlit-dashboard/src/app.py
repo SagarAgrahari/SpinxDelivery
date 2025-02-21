@@ -63,21 +63,21 @@ def main():
     st.title("Spinx Delivery")
     # Add logout button in sidebar
     # Add the URL button
-    url = "https://hqporner.com/"  # Replace with your desired URL
-    st.markdown(f'''
-        <a href="{url}" target="_blank">
-            <button style="
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px 24px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                margin-bottom: 20px;">
-                Visit Website
-            </button>
-        </a>
-    ''', unsafe_allow_html=True)
+    # url = "https://hqporner.com/"  # Replace with your desired URL
+    # st.markdown(f'''
+    #     <a href="{url}" target="_blank">
+    #         <button style="
+    #             background-color: #4CAF50;
+    #             color: white;
+    #             padding: 10px 24px;
+    #             border: none;
+    #             border-radius: 4px;
+    #             cursor: pointer;
+    #             margin-bottom: 20px;">
+    #             Visit Website
+    #         </button>
+    #     </a>
+    # ''', unsafe_allow_html=True)
     if st.sidebar.button("Logout"):
         st.session_state["logged_in"] = False
         st.rerun()
