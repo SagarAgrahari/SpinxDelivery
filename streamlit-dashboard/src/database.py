@@ -1,5 +1,6 @@
 import sqlite3
 from faker import Faker
+import os
 
 def create_connection(db_file):
     """Create a database connection to the SQLite database specified by db_file."""
@@ -38,17 +39,20 @@ def insert_fake_data(conn, fake):
         cur.execute(insert_sql, (fake.name(), fake.address(), fake.email()))
     conn.commit()
 
-def main():
-    database = "../data/database.db"
-    fake = Faker()
-
-    conn = create_connection(database)
-    if conn is not None:
-        create_table(conn)
-        insert_fake_data(conn, fake)
-        conn.close()
+def initialize_database(db_file):
+    """Initialize the database if it doesn't exist."""
+    if not os.path.exists(db_file):
+        fake = Faker()
+        conn = create_connection(db_file)
+        if conn is not None:
+            create_table(conn)
+            insert_fake_data(conn, fake)
+            conn.close()
+        else:
+            print("Error! Cannot create the database connection.")
     else:
-        print("Error! Cannot create the database connection.")
+        print("Database already exists.")
 
 if __name__ == '__main__':
-    main()
+    database = "../data/database.db"
+    initialize_database(database)
