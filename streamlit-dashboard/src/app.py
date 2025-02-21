@@ -2,6 +2,8 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import plotly.express as px
+import os
+from database import initialize_database
 
 def create_connection(db_file):
     """Create a database connection to the SQLite database specified by db_file."""
@@ -10,7 +12,7 @@ def create_connection(db_file):
         conn = sqlite3.connect(db_file)
         return conn
     except sqlite3.Error as e:
-        print(e)
+        st.error(f"Error connecting to database: {e}")
     return conn
 
 def fetch_data(conn, query):
@@ -20,11 +22,53 @@ def fetch_data(conn, query):
     rows = cur.fetchall()
     return rows
 
+def login_user(conn, username, password):
+    """Verify user credentials."""
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
+    user = cur.fetchone()
+    return user is not None
+
+def show_login_page():
+    """Display the login page."""
+    st.title("Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    
+    if st.button("Login"):
+        database = "../data/food_delivery.db"
+        conn = create_connection(database)
+        if conn is not None:
+            if login_user(conn, username, password):
+                st.session_state["logged_in"] = True
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+            conn.close()
+
 def main():
     st.set_page_config(page_title="Spinx Delivery", layout="wide")
-    st.title("Spinx Delivery")
-
     database = "../data/food_delivery.db"
+    initialize_database("../data/food_delivery.db")
+
+    # Initialize session state for login
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+
+    # Check if user is logged in
+    if not st.session_state["logged_in"]:
+        show_login_page()
+        return
+
+    st.title("Spinx Delivery")
+    # Add logout button in sidebar
+    if st.sidebar.button("Logout"):
+        st.session_state["logged_in"] = False
+        st.rerun()
+
+    # Rest of your existing dashboard code...
+    # database = os.path.abspath("data/food_delivery.db")
+    
     conn = create_connection(database)
 
     if conn is not None:
@@ -42,8 +86,7 @@ def main():
         if status_filter != "All":
             df = df[df['Status'] == status_filter]
 
-        # st.write("### Order Data")
-        # st.dataframe(df)
+    
 
         # Metrics
         total_orders = len(df)
@@ -59,7 +102,7 @@ def main():
         col1, col2, col3, col4, col5 = st.columns(5)
         col1.markdown(f"""
             <div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px; text-align: center; height: 150px;">
-                <h3 style="color: #ff4b4b;">Total<br>Orders</h3>
+                <h3 style="color: #ff4b4b;">Total Orders</h3>
                 <p style="font-size: 24px;">{total_orders}</p>
             </div>
         """, unsafe_allow_html=True)
